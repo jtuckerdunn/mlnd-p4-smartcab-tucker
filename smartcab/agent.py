@@ -8,7 +8,7 @@ class LearningAgent(Agent):
     """ An agent that learns to drive in the Smartcab world.
         This is the object you will be modifying. """
 
-    def __init__(self, env, learning=False, epsilon=0.8, alpha=0.8):
+    def __init__(self, env, learning=False, epsilon=1.0, alpha=0.6):
         super(LearningAgent, self).__init__(env)     # Set the agent in the evironment
         self.planner = RoutePlanner(self.env, self)  # Create a route planner
         self.valid_actions = self.env.valid_actions  # The set of valid actions
@@ -43,7 +43,7 @@ class LearningAgent(Agent):
             self.epsilon = 0
             self.alpha = 0
         else:
-            self.epsilon = math.exp(-.5*self.t)
+            self.epsilon = math.exp(-.01*self.t)
             self.t += 1.0
 
         return None
@@ -214,7 +214,7 @@ def run():
     #   tolerance  - epsilon tolerance before beginning testing, default is 0.05
     #   n_test     - discrete number of testing trials to perform, default is 0
 
-    sim.run(n_test = 20, tolerance = 0.1)
+    sim.run(n_test = 100, tolerance = 0.1)
 
 
 if __name__ == '__main__':
