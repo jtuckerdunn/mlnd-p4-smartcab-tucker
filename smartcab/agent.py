@@ -8,7 +8,7 @@ class LearningAgent(Agent):
     """ An agent that learns to drive in the Smartcab world.
         This is the object you will be modifying. """
 
-    def __init__(self, env, learning=False, epsilon=1.0, alpha=0.5):
+    def __init__(self, env, learning=False, epsilon=0.8, alpha=0.8):
         super(LearningAgent, self).__init__(env)     # Set the agent in the evironment
         self.planner = RoutePlanner(self.env, self)  # Create a route planner
         self.valid_actions = self.env.valid_actions  # The set of valid actions
@@ -23,7 +23,7 @@ class LearningAgent(Agent):
         ## TO DO ##
         ###########
         # Set any additional class parameters as needed
-
+        self.t = 1.0
 
     def reset(self, destination=None, testing=False):
         """ The reset function is called at the beginning of each trial.
@@ -43,7 +43,8 @@ class LearningAgent(Agent):
             self.epsilon = 0
             self.alpha = 0
         else:
-            self.epsilon = self.epsilon -0.05
+            self.epsilon = math.exp(-.5*self.t)
+            self.t += 1.0
 
         return None
 
@@ -128,11 +129,16 @@ class LearningAgent(Agent):
         else:
             if self.epsilon >= random.random():
                 action = random.choice(self.valid_actions)
-            else:
-                for key in self.Q[state]:
-                    if key == get_maxQ(state):
-                        action = key
 
+            else:
+                key_list = []
+                for key in self.Q[state]:
+                    if self.Q[state][key] == self.get_maxQ(state):
+                        key_list.append(key)
+                if not key_list:
+                    action = random.choice(self.valid_actions)
+                else:
+                    action = random.choice(key_list)
                 return action
 
 
@@ -146,7 +152,7 @@ class LearningAgent(Agent):
         ###########
         # When learning, implement the value iteration update rule
         #   Use only the learning rate 'alpha' (do not use the discount factor 'gamma')
-
+        self.Q[state][action] = self.Q[state][action] + self.alpha * (reward -self.Q[state][action])
         return
 
 
@@ -200,7 +206,7 @@ def run():
     #   log_metrics  - set to True to log trial and simulation results to /logs
     #   optimized    - set to True to change the default log file name
 
-    sim = Simulator(env, update_delay = 0.01, log_metrics = True, display = False)
+    sim = Simulator(env, update_delay = 0.01, log_metrics = True, display = False, optimized = True)
 
     ##############
     # Run the simulator
@@ -208,7 +214,7 @@ def run():
     #   tolerance  - epsilon tolerance before beginning testing, default is 0.05
     #   n_test     - discrete number of testing trials to perform, default is 0
 
-    sim.run(n_test = 10)
+    sim.run(n_test = 20, tolerance = 0.1)
 
 
 if __name__ == '__main__':
